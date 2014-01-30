@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <meta charset="utf-8">
+      <title>Raspberry Pi with Bittorrent Sync</title>
+      <link rel="stylesheet" href="/css/screen.css">
+      <link rel="stylesheet" href="/css/syntax.css">
+  </head>
+  <body>
+    <div class="site">
+
+      <div class="header">
+        <h1 class="title"><a href="/">Bitmono</a></h1>
+        <p>A blog about development, technology and random stuff from /dev/null.</p>
+      </div>
+
+      <nav class="nav-primary" role="navigation" >
+          <ul>
+              
+              <li>
+                <a  href="/about.html">About</a>
+              </li>
+              
+              <li>
+                <a  href="/index.html">Home</a>
+              </li>
+              
+              <li>
+                <a  href="/blog.html">Blog</a>
+              </li>
+              
+              <li>
+                <a  href="/contact.html">Contact</a>
+              </li>
+              
+          </ul>
+      </nav>
+
+
+
+    <main>
+
+      <h2>Raspberry Pi with Bittorrent Sync</h2>
+
+      <p class="meta">21 Jan 2014</p>
+
+<div class="post">
+<p>I love the Raspberry Pi. When I purchased it was to have a simple low-power 24/7 server which could do a few cron jobs to backup remote servers, pretty simple stuff. I have since added a couple of really awesome services, one is <a href="http://labs.bittorrent.com/experiments/sync.html">Bittorrent Sync</a> which although (currently) closed-source is the best de-centralised file-sync system I have used when compared to Dropbox. The other is <a href="https://github.com/swanson/stringer">Stringer</a>, which is a really nice, simple RSS reader which includes a clone of the Fever API so you can use compatible apps on Android/iPhone etc.</p>
+
+<p>Although I loved the setup I had on the Raspberry Pi I felt like things had become a bit messy during various experiments, so I decided to start over from scratch so I could do a clean installation and document the entire process for reference. This is a big guide, so I thought other people might find it interesting and use/adapt it for their own needs or point out some things I could have done better (feel free to leave comments). Here is the complete walkthrough.</p>
+
+<h2>Preamble</h2>
+
+<p>Firstly a word of caution, if you are completely new to the command line this may not be for you. There will be times where you need at least basic *nix knowledge which is not documented below.</p>
+
+<p>Secondly I will using a Mac throughout this guide, as much as love Linux I haven&#39;t quite switched over yet on the desktop. The only real differences of note are the preparation of the SDCard, everything else is done directly on the Raspberry Pi over SSH on the Raspberry Pi so the commands will be identical.</p>
+
+<h2>1. Components</h2>
+
+<p>This will be a <a href="http://en.wikipedia.org/wiki/Headless_system">headless system</a>, no monitor is required. The most expensive components here will be the USB Hard Drive(s), but hopefully you will have an old one laying around you can repurpose. I am not using WiFi for speed reasons. Here is the complete list:</p>
+
+<ol>
+<li>Raspberry Pi Model B with mains power adapter</li>
+<li>8GB SD card (anything over 4GB is fine)</li>
+<li>USB hard drive(s)</li>
+<li>Powered USB hub[1]</li>
+<li>Ethernet and USB cables</li>
+</ol>
+
+<h2>2. Get Raspian &quot;wheezy&quot; on an SD card</h2>
+
+<p>If you have an SD card with Raspian &quot;wheezy&quot; pre-installed you can skip this and go to the next step. This step is to prepare the SD card with the standard Raspian &quot;wheezy&quot; image.</p>
+
+<p>First download the Raspian &quot;wheezy&quot; image from <a href="http://www.raspberrypi.org/downloads">http://www.raspberrypi.org/downloads</a>. Other images are available, including more minimal ones (no GUI) but I prefer to stick to the official one.</p>
+
+<p>After your download is finished it&#39;s probably a good idea to check that the SHA-1 matches. On a Mac you can open a terminal and type the following, adapting the path to the location and file of the downloaded image file:</p>
+
+<div class="highlight"><pre><code class="console"><span class="go">shasum /path/to/file</span>
+</code></pre></div>
+
+<p>Compare the resulting SHA-1. If it matches, unzip the file so you have uncompressed version (this will end in <strong>.img</strong>) and delete the zipped version.</p>
+
+<h3>Warning</h3>
+
+<p>What follows next are instructions adapted from <a href="http://elinux.org/RPi_Easy_SD_Card_Setup">http://elinux.org/RPi<em>Easy</em>SD<em>Card</em>Setup</a>. I recommend reading that page as it has much more comprehensive instructions and includes more platforms, this is Mac specific. This is the most dangerous step throughout this guide as doing this wrong will result in overwriting an incorrect disk, which guarantees losing data and facing a potential catastrophe. I am still noting the basic instructions here for completeness, but if you do not understand these commands exercise extreme caution and go through the instructions linked above.</p>
+
+<h3>dd</h3>
+
+<p>The next step is to <strong>dd</strong> the Raspian image onto our SD card, start by running the following command:</p>
+
+<div class="highlight"><pre><code class="console"><span class="go">df -h</span>
+</code></pre></div>
+
+<p>Next connect the SD card and run the <code>df -h</code> command again. Now look for a new device and carefully note the name, an example would be <code>/dev/desk1s1</code>.</p>
+
+<p>Now unmount the mounted SD card partition by adapting the command below so that it matches the device name noted earlier:</p>
+
+<div class="highlight"><pre><code class="console"><span class="go">sudo diskutil unmount /dev/DISK_NAME</span>
+</code></pre></div>
+
+<p>We now need the establish the raw device name for the entire SD card disk. To do so omit the final &quot;s1&quot; from the partition name and replace &quot;disk&quot; with &quot;rdisk&quot;. Using the example of <strong>/dev/disk1s1</strong> the raw disk would be <strong>/dev/rdisk1</strong>. <em>Again it is critical that you get this correct, if you mistakenly choose the wrong drive it will wipe out all data which would have disastrous consequences</em>. Once you have established the raw device name, enter the following command adapting it as needed:</p>
+
+<div class="highlight"><pre><code class="console"><span class="go">sudo dd bs=1m if=~/path/to/file.img of=/dev/RAW_DISK_NAME</span>
+</code></pre></div>
+
+<p>Example (note I have omitted the sudo for safety):</p>
+
+<div class="highlight"><pre><code class="console"><span class="go">dd bs=1m if=~/Downloads/2013-07-26-wheezy-raspbian.img of=/dev/rdisk1</span>
+</code></pre></div>
+
+<p>After the dd command finishes, eject the card using the following command:</p>
+
+<div class="highlight"><pre><code class="console"><span class="go">sudo diskutil eject /dev/RAW_DISK_NAME</span>
+</code></pre></div>
+
+<p>You can now insert the SD card into your Raspberry Pi.</p>
+
+<h2>3. Initial setup</h2>
+
+<p>At this point you will have the Raspbian &quot;wheezy&quot; SD card inserted into your Raspberry Pi, have connected the ethernet cable (onto your local network), have plugged-in the USB hard drive routed via the powered USB hub and the USB power adapter for the Raspberry Pi which is now powered on. Let&#39;s start talking to your Raspberry Pi.</p>
+
+<h3>Getting the IP address</h3>
+
+<p>The first thing we need is to find out the IP address of the Raspberry Pi. Many routers include a topology of the local network inside the control panel, if you can log in and find out the IP address from their it is certainly the easiest method. Another way is a tool such as <a href="http://nmap.org/">Nmap</a>, a command line utility[1]. On a Mac with <a href="http://brew.sh/">Homebrew</a> installed it is simply a matter of <code>brew install nmap</code> to get it installed, for other platforms just following the instructions on Nmap&#39;s website. Once installed you can issue the following command:</p>
+
+<div class="highlight"><pre><code class="console"><span class="go">nmap -v -A 192.168.1.0/24</span>
+</code></pre></div>
+
+<p>This will take a few minutes and spit out a lot of information, what you want is to scroll back through the report and find something similar to this:</p>
+
+<p>Nmap scan report for 192.168.1.10
+  [removed]
+  22/tcp open  ssh     OpenSSH 6.0p1 Debian 4 (protocol 2.0)
+  [removed]
+  Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</p>
+
+<p><em>Note I have removed a few lines and information from the above output</em></p>
+
+<p>You can see it found a Debian based OS on the network and it only 1 open port, 22/SSH. This is almost certainly the Raspberry Pi so we now have the IP address of <strong>192.168.1.10</strong>.</p>
+
+<h3>SSH</h3>
+
+<p>With the IP address in hand we can SSH into our Raspberry Pi. The default username and password in Raspian &quot;wheezy&quot; are <strong>pi</strong> and <strong>raspberry</strong> respectively, so in the terminal issue the following command:</p>
+
+<p>ssh pi@192.168.1.10</p>
+
+<p>If you need to confirm adding to known hosts do so, and enter the default password above. If everything went well you should now be sitting at a command prompt showing something like <strong>pi@raspberrypi</strong>. We&#39;re now logged into the Raspberry Pi.</p>
+
+<h3>raspi-config</h3>
+
+<p>One thing you may have noticed was the following statement shown when you logged-in <strong>&quot;NOTICE: the software on this Raspberry Pi has not been fully configured. Please run &#39;sudo raspi-config&#39;&quot;</strong>. Even if this mesaage was not shown let&#39;s go through the initial configuration. Run the following command:</p>
+
+<p>sudo raspi-config</p>
+
+<p>You should see something like the following, you can navigate using arrow keys and the return key to select items.</p>
+
+<p>PICTURE OF RASPI-CONFIG</p>
+
+<p>Inside raspi-config we need to do the following:</p>
+
+<ol>
+<li>Run <strong>Change User Password</strong> and set a new, strong password.</li>
+<li>Run <strong>Expand Filesystem</strong> which will maximise the SD card space.</li>
+<li>Run <strong>Enable Boot to Desktop</strong> and select <strong>No</strong>, we do not want the desktop to autoload.</li>
+<li>Run <strong>Advanced Options -&gt; Memory Split</strong> and set it to 16 (we are setting-up a headless system so graphics are not important).</li>
+</ol>
+
+<p>Now exit by selecting <strong>Finish</strong> and rebooting. Your connection will be closed so connect again with SSH using the same command earlier (note you will need to wait until the Raspberry Pi has fully rebooted).</p>
+
+<h2>4. Users, security, port forwarding and dynamic DNS.</h2>
+
+<p>Since this machine is going to be internet facing, we need some security measures in place. For this reason we want to start by creating some new users for accessing the machine.</p>
+
+<h3>Adding users</h3>
+
+<p>For the first user you can replace <code>raspi</code> with a user name of your choice:</p>
+
+<p>sudo adduser raspi</p>
+
+<p>Ensure you use a long secure password and provide any information you would like (optional) and confirm. You also want to add a user for Bittorrent Sync, so repeat the process:</p>
+
+<p>sudo adduser btsync</p>
+
+<p>Next we need to allow this user <strong>sudo</strong> privilegdes, issue the following command:</p>
+
+<p>sudo visudo</p>
+
+<p>At the bottom you will see the following line:</p>
+
+<p>pi ALL=(ALL) NOPASSWD: ALL</p>
+
+<p>Add identical lines underneath changing only the user names we created earlier. You should have something like the following:</p>
+
+<p>pi ALL=(ALL) NOPASSWD: ALL
+  raspi ALL=(ALL) NOPASSWD: ALL
+  btsync ALL=(ALL) NOPASSWD: ALL</p>
+
+<p>You can hit <strong>CTRL</strong> + <strong>x</strong> and confirm the changes with <strong>Y</strong> to save and exit. Now we need to edit another file, issue the following command:</p>
+
+<p>sudo nano /etc/ssh/sshd_config</p>
+
+<p>Find and change <code>PermitRootLogin</code> from <strong>yes</strong> to <strong>no</strong> so that it reads:</p>
+
+<p>PermitRootLogin no</p>
+
+<p>Lastly add the following to the bottom of the file:</p>
+
+<p>UseDNS no
+  AllowUsers pi raspi btsync</p>
+
+<p>Now reload SSH</p>
+
+<p>sudo service ssh restart</p>
+
+<p><em>One thing you might want to consider if you even want to keep the default user &#39;pi&#39; as this is a known user of the Raspberry Pi so presents a potential security threat.</em></p>
+
+<h3>iptables</h3>
+
+<p><a href="http://www.netfilter.org/projects/iptables/index.html">iptables</a> is the userspace command line program used to configure the Linux 2.4.x and later packet filtering ruleset. I won&#39;t go into details for each of these commands but if you do want a much more thorough walkthough I recommend the guide <a href="https://www.digitalocean.com/community/articles/how-to-set-up-a-firewall-using-ip-tables-on-ubuntu-12-04">How to Set Up a Firewall Using IP Tables on Ubuntu 12.04</a> by <a href="https://www.digitalocean.com/">Digital Ocean</a>. Here are the commands:</p>
+
+<div class="highlight"><pre><code class="console"><span class="go">sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT</span>
+<span class="go">sudo iptables -A INPUT -p tcp --dport ssh -j ACCEPT</span>
+<span class="go">sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT</span>
+<span class="go">sudo iptables -A INPUT -p tcp --dport 5000 -j ACCEPT</span>
+<span class="go">sudo iptables -A INPUT -p tcp --dport 8888 -j ACCEPT</span>
+<span class="go">sudo iptables -A INPUT -j DROP</span>
+<span class="go">sudo iptables -I INPUT 1 -i lo -j ACCEPT</span>
+<span class="go">sudo iptables -L -v</span>
+</code></pre></div>
+
+<p>If you have entered the above commands correctly you should see something very similar to this printed to the console (ignore the <strong>pkts</strong> and <strong>bytes</strong>):</p>
+
+<div class="highlight"><pre><code class="console"><span class="go">Chain INPUT (policy ACCEPT 0 packets, 0 bytes)</span>
+<span class="go"> pkts bytes target     prot opt in     out     source               destination</span>
+<span class="go">    0     0 ACCEPT     all  --  lo     any     anywhere             anywhere</span>
+<span class="go">  543 35064 ACCEPT     all  --  any    any     anywhere             anywhere             ctstate RELATED,ESTABLISHED</span>
+<span class="go">    0     0 ACCEPT     tcp  --  any    any     anywhere             anywhere             tcp dpt:ssh</span>
+<span class="go">    0     0 ACCEPT     tcp  --  any    any     anywhere             anywhere             tcp dpt:http</span>
+<span class="go">    0     0 ACCEPT     tcp  --  any    any     anywhere             anywhere             tcp dpt:5000</span>
+<span class="go">    0     0 ACCEPT     tcp  --  any    any     anywhere             anywhere             tcp dpt:8888</span>
+<span class="go">    3   301 DROP       all  --  any    any     anywhere             anywhere</span>
+
+<span class="go">Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)</span>
+<span class="go"> pkts bytes target     prot opt in     out     source               destination</span>
+
+<span class="go">Chain OUTPUT (policy ACCEPT 94 packets, 13736 bytes)</span>
+<span class="go"> pkts bytes target     prot opt in     out     source               destination</span>
+</code></pre></div>
+
+<p>The rules above are not yet persistent and will be lost upon the reboot of the machine, so we next need to make them persistent:</p>
+
+<div class="highlight"><pre><code class="console"><span class="go">sudo apt-get update</span>
+<span class="go">sudo apt-get install iptables-persistent</span>
+</code></pre></div>
+
+<p>You will be asked if you want to save current IPv4 and IPv6 rules, answer yes to both. Check that the service is running by issuing this command:</p>
+
+<p>sudo service iptables-persistent start</p>
+
+<p>On the next reboot these rules will remain in place.</p>
+
+<h3>Fail2ban</h3>
+
+<p>From <a href="http://www.fail2ban.org/">http://www.fail2ban.org/</a>:</p>
+
+<p><strong><em>Fail2ban</em></strong> scans log files (e.g. <code>/var/log/apache/error_log</code>) and bans IPs that show the malicious signs -- too many password failures, seeking for exploits, etc. Generally Fail2Ban then used to update firewall rules to reject the IP addresses for a specified amount of time, although any arbitrary other <strong>action</strong> (e.g. sending an email, or ejecting CD-ROM tray) could also be configured. Out of the box Fail2Ban comes with <strong>filters</strong> for various services (apache, curier, ssh, etc).</p>
+
+<p>The following is adapted from the much thorough guide <a href="https://www.digitalocean.com/community/articles/how-to-protect-ssh-with-fail2ban-on-ubuntu-12-04">How to Protect SSH with fail2ban on Ubuntu 12.04</a>, I recommend reading that if you want more information about what we are doing. Misconfiguring Fail2ban could result in being locked out of your own server, so make sure you proceed with some caution. First let&#39;s install Fail2ban:</p>
+
+<p>sudo apt-get update
+  sudo apt-get install fail2ban</p>
+
+<p>Now we need to make a copy of the default configuration file, you should not edit the default one directly:</p>
+
+<p>sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local</p>
+
+<p>Now we can edit the new configuration file:</p>
+
+<p>sudo nano /etc/fail2ban/jail.local</p>
+
+<p>Feel free to change some of the values such as <strong>bantime</strong>, <strong>maxretry</strong> etc however since we don&#39;t have a mailserver and most ISP&#39;s block outgoing port 25 changing the <strong>destemail</strong> will have little effect. I am going to revisit this problem again in future and find a way around it probably using <strong>SSMTP</strong>, but for you will need to just check the logs manually. Restart Fail2ban with the following:</p>
+
+<p>sudo service fail2ban restart</p>
+
+<p>If you would like to see what rules Fail2ban has in effect you can do so with the following:</p>
+
+<p>sudo iptables -L</p>
+
+<p>If you ever want to check the logs you will find them in <code>/var/log/fail2ban.log</code>.</p>
+
+<h3>Port forwarding and dynamic DNS</h3>
+
+<p>This is optional if you only want BitTorrent Sync then you probably don&#39;t need this. Personally I like the idea of having access from outside my local network if needed, but it does mean you&#39;re increasing your attack surface. If you are worried about this then you should consider skipping this step.</p>
+
+<p>The vast majority of home routers have the ability to forward ports, and most allow dynamic DNS. It is beyond the scope of this tutorial to provide instructions for all routers, but if you simply search online for <strong>your router port forward</strong> and <strong>your router dynamic dns</strong> you will almost certainly find guides. I have a BT Internet router and it was simply a question of logging into the control panel and setting up the various port forwards and entering the DnyDNS information.</p>
+
+<h4>Port forward</h4>
+
+<p>In terms of port forwarding we want these ports to be forwarded:</p>
+
+<p>port 22
+  port 5000
+  port 8888</p>
+
+<p>You can map them to the same port numbers and just ensure they are assigned to the Raspberry Pi.</p>
+
+<h4>Dynamic DNS</h4>
+
+<p>If you are fortunate enough to have a static IP you won&#39;t need to worry about dynamic DNS, but for the vast majority of home users they will be using a non-static IP address. For dynamic DNS I use <a href="http://www.dtdns.com/">DtDNS</a> but there is also <a href="http://www.noip.com/">No-IP</a> and <a href="http://www.dyn.com/">Dyn</a>. In my router I can provide my username and password and the host url and it will then allow the port forward to map to the Raspberry Pi, for example:</p>
+
+<p>http://user.dtdns.net:8888</p>
+
+<p>Will be mapped to the Bittorrent Sync control panel and:</p>
+
+<p>http://user.dtdns.net:5000</p>
+
+<p>Will be mapped to the Stringer web interface and allow us to use <code>http://user.dtdns.net:5000/fever</code> as our Fever API compatible server address which we will setup shortly.</p>
+
+<h2>5. USB hard drive setup</h2>
+
+<p>First, a quick note. As I was compiling this guide, I decided to switch around a couple of things in the physical setup of the Raspberry Pi, one of those was the USB cable for the hard drive. This cable was bad, but it was only after about 12 hours of use before I realised it. These were strange intermittent connection issues, sometimes it would be fine for several hours, other times it would not mount at all, other times it would show up and be write-locked etc. I thought I was doing something drastically wrong with my configuration so tried many attempts to repair permissions etc, before finally realising it was a hardware issue when the following popped-up <code>ls: reading directory .: Input/output error</code>. Ugh. Anyway, the lesson here if you could just remove your palm from your face, is to always check your cables, don&#39;t be an idiot like me!</p>
+
+<p>Now let&#39;s get this USB disk set up. For paranoia reasons I like to encrypt any external hard drives I use. On Mac it is built-in, on Linux there are many options but we will be using dm-crypt LUKS which seems excellent and means if someone walks off with your USB drive they can&#39;t simply mount it and browse all your files.</p>
+
+<h3>USB device ID</h3>
+
+<p>We need to first get the ID of the USB drive. First ensure the USB disk is unplugged, and then plug connect it and allow it to power up and immediately enter the following command:</p>
+
+<p>dmesg | tail -20</p>
+
+<p>You should see something like the following in the output:</p>
+
+<p>[32297.367054] scsi 0:0:0:0: Direct-Access     Toshiba  StorE HDD        0000 PQ: 0 ANSI: 4
+  [32297.371827] sd 0:0:0:0: [sda] 625142448 512-byte logical blocks: (320 GB/298 GiB)</p>
+
+<p>I know that my drive is a Toshiba and that it is 320GB, so from the above output I can see a reference to it along with the device ID in brackets, <code>[sda]</code>. You can confirm this by running the following command:</p>
+
+<p>sudo fdisk -l</p>
+
+<p>In the output shown it will also display the size of the disk, and again since we know the USB disk is <strong>320GB</strong> and also that the SD card is only <strong>8GB</strong> the following line re-confirms that the drive ID is indeed <strong>sda</strong>:</p>
+
+<p>Disk /dev/sda: 320.1 GB, 320072933376 bytes</p>
+
+<p>Now make a note of your device ID, if you get this wrong in the following steps you could end up overwriting the SD card or another partition which would be a serious pain.</p>
+
+<h3>LUKS</h3>
+
+<p>Now we&#39;re going to employ <a href="https://code.google.com/p/cryptsetup/">LUKS</a> for disk encryption. As credit, this part of the guide is adapted from <a href="http://xmodulo.com/2013/01/how-to-create-encrypted-disk-partition-on-linux.html">How to create an encrypted disk partition on Linux</a>, I recommend reading the full article if you would like more detailed information. We start by issuing the following commands:</p>
+
+<p>sudo apt-get update
+  sudo apt-get install cryptsetup</p>
+
+<p>Next we use <strong>fdisk</strong> to create some partitions, you will want to name and size these according to your own needs but here is an example partition I am using called <strong>btsync</strong> sized at 100GB, and another called <strong>backup</strong> also sized at 100GB. I am leaving a bit of space for future needs. Again, make sure you have the correct device ID and adapt the commands below to match:</p>
+
+<p>sudo fdisk /dev/sda</p>
+
+<p>You should see the following command prompt</p>
+
+<p>PICTURE OF FDISK COMMAND PROMPT</p>
+
+<p>The GUI for fdisk is very unusual, you simply hit a letter and enter to get around. You can enter <strong>m</strong> for help. Enter <strong>p</strong> followed by enter to see the current partition table, you should see something like the following:</p>
+
+<div class="highlight"><pre><code class="console"><span class="go">  Disk /dev/sda: 320.1 GB, 320072933376 bytes</span>
+<span class="go">  255 heads, 63 sectors/track, 38913 cylinders, total 625142448 sectors</span>
+<span class="go">  Units = sectors of 1 * 512 = 512 bytes</span>
+<span class="go">  Sector size (logical/physical): 512 bytes / 512 bytes</span>
+<span class="go">  I/O size (minimum/optimal): 512 bytes / 512 bytes</span>
+<span class="go">  Disk identifier: 0xa8725e51</span>
+
+<span class="go">     Device Boot      Start         End      Blocks   Id  System</span>
+<span class="go">  /dev/sda1            2048   251660287   125829120   83  Linux</span>
+<span class="go">  /dev/sda2       251660288   625142447   186741080   83  Linux</span>
+</code></pre></div>
+
+<p>My disk already had a couple of partitions on it, so I want to remove those and create new ones.</p>
+
+<p><strong>WARNING: What you are about to do will remove the data on your USB drive. You will not be able to recover from this. Ensure there is nothing you want to keep or copy it onto another computer first. There is no undo for this operation.</strong></p>
+
+<p>These are the commands I entered to remove the existing partitions, I have noted return key as [return]:</p>
+
+<div class="highlight"><pre><code class="console"><span class="go">  Command (m for help): d [return]</span>
+<span class="go">  Partition number (1-4): 1 [return]</span>
+
+<span class="go">  Command (m for help): d [return]</span>
+<span class="go">  Partition number (1-4): 2 [return]</span>
+
+<span class="go">  Command (m for help): p [return]</span>
+
+<span class="go">  Disk /dev/sda: 320.1 GB, 320072933376 bytes</span>
+<span class="go">  255 heads, 63 sectors/track, 38913 cylinders, total 625142448 sectors</span>
+<span class="go">  Units = sectors of 1 * 512 = 512 bytes</span>
+<span class="go">  Sector size (logical/physical): 512 bytes / 512 bytes</span>
+<span class="go">  I/O size (minimum/optimal): 512 bytes / 512 bytes</span>
+<span class="go">  Disk identifier: 0xa8725e51</span>
+
+<span class="go">     Device Boot      Start         End      Blocks   Id  System</span>
+
+<span class="go">  Command (m for help): n [return]</span>
+<span class="go">  Partition type:</span>
+<span class="go">     p   primary (0 primary, 0 extended, 4 free)</span>
+<span class="go">     e   extended</span>
+<span class="go">  Select (default p): [return]</span>
+<span class="go">  Using default response p</span>
+<span class="go">  Partition number (1-4, default 1): [return]</span>
+<span class="go">  Using default value 1</span>
+<span class="go">  First sector (2048-625142447, default 2048): [return]</span>
+<span class="go">  Using default value 2048</span>
+<span class="go">  Last sector, +sectors or +size{K,M,G} (2048-625142447, default 625142447): +100G [return]</span>
+
+<span class="go">  Command (m for help): n [return]</span>
+<span class="go">  Partition type:</span>
+<span class="go">     p   primary (1 primary, 0 extended, 3 free)</span>
+<span class="go">     e   extended</span>
+<span class="go">  Select (default p): [return]</span>
+<span class="go">  Using default response p</span>
+<span class="go">  Partition number (1-4, default 2): [return]</span>
+<span class="go">  Using default value 2</span>
+<span class="go">  First sector (209717248-625142447, default 209717248):</span>
+<span class="go">  Using default value 209717248</span>
+<span class="go">  Last sector, +sectors or +size{K,M,G} (209717248-625142447, default 625142447): +100G [return]</span>
+
+<span class="go">  Command (m for help): w [return]</span>
+</code></pre></div>
+
+<p>It should now have written the changes, synced the disks and returned you back to the bash prompt. Now we want to run the cryptsetup command, first double check the device ID&#39;s</p>
+
+<p>sudo fdisk -l</p>
+
+<p>You will see the 2 new partitions listed, in my case they are <strong>sda1</strong> and <strong>sda2</strong>. Now run the following command, you will need to adapt the device ID to match your own and enter a passphrase (make this very strong):</p>
+
+<p>sudo cryptsetup --verbose --verify-passphrase luksFormat /dev/sda1
+  sudo cryptsetup --verbose --verify-passphrase luksFormat /dev/sda2</p>
+
+<p>Once you have done the above on both partitions, the LUKS partition can be opened as follows (you will need the passphrase(s) created earlier):</p>
+
+<p>sudo cryptsetup luksOpen /dev/sda1 sda1
+  sudo cryptsetup luksOpen /dev/sda2 sda2</p>
+
+<p>Now we can create a filesystem on these partitions, and mount them on to the system (this may take a few minutes):</p>
+
+<p>sudo mkfs.ext4 /dev/mapper/sda1
+  sudo mkfs.ext4 /dev/mapper/sda2</p>
+
+<p>sudo mkdir /mnt/btsync
+  sudo mkdir /mnt/backup</p>
+
+<p>sudo mount /dev/mapper/sda1 /mnt/btsync
+  sudo mount /dev/mapper/sda2 /mnt/backup</p>
+
+<p>sudo chmod 777 /mnt/btsync
+  sudo chmod 777 /mnt/backup</p>
+
+<p>Now we can us <strong>df</strong> to check the disks are mounted correctly:</p>
+
+<p>df</p>
+
+<p><em>Tip: if you would like to the output of *</em>df** with megabytes, use <code>df -m</code> instead.*</p>
+
+<h3>Mount LUKS partitions automatically</h3>
+
+<p>There is no point having encrypted drives if we need to SSH in, enter passphrases and run these commands everytime we we reboot. Follow these instructions to have them mounted automatically. Enter the following command, again adapt it so you have the same device ID:</p>
+
+<p>sudo dd if=/dev/urandom of=/root/key.sda1 bs=1024 count=4
+  sudo dd if=/dev/urandom of=/root/key.sda2 bs=1024 count=4</p>
+
+<p>sudo chmod 400 /root/key.sda1
+  sudo chmod 400 /root/key.sda2</p>
+
+<p>sudo cryptsetup luksAddKey /dev/sda1 /root/key.sda1
+  sudo cryptsetup luksAddKey /dev/sda2 /root/key.sda2</p>
+
+<p>Now we need to get the UUID of the block devices:</p>
+
+<p>sudo cryptsetup luksUUID /dev/sda1
+  sudo cryptsetup luksUUID /dev/sda2</p>
+
+<p>Now edit <code>/etc/crypttab</code> and add the following line, adapted to your own device ID and UUID&#39;s:</p>
+
+<p>sda1 /dev/disk/by-uuid/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx /root/key.sda1 luks
+  sda2 /dev/disk/by-uuid/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx /root/key.sda2 luks</p>
+
+<p>Now edit <code>/etc/fstab</code> and add the mount point information:</p>
+
+<p>/dev/mapper/sda1        /mnt/btsync     auto    auto            0       0
+  /dev/mapper/sda2        /mnt/backup     auto    auto            0       0</p>
+
+<p>Now we need to setup a group and alter some permissions:</p>
+
+<p># add information about adding a group, and adding users to that group
+  sudo chgrp pishare -R /mnt/btsync
+  sudo chmod g+rwxs -R /mnt/btsync
+  sudo chgrp pishare -R /mnt/backup
+  sudo chmod g+rwxs -R /mnt/backup</p>
+
+<p>Now reboot, test if the partitions are auto-mounted, and see if you can write to the partition as a normal user.</p>
+
+<h2>6. BitTorrent Sync</h2>
+
+<p>I&#39;ll admit, so far this has been pretty boring stuff, now we can start adding more fun software like Bittorrent Sync. First let&#39;s get a few basic packages such as Git[2], htop[3] and Vim[4], run the following command:</p>
+
+<p>sudo apt-get install git htop vim rcconf</p>
+
+<p><em>Note: all the commands so far have used *</em>nano** for text editing, however I much prefer Vim. It&#39;s completely optional so you can continue to use <strong>nano</strong> if you prefer and can remove it from the above command.*</p>
+
+<p>Now we have to get Bittorrent Sync from elsewhere as it doesn&#39;t have a listing in the repositories. First we should switch to the <strong>btsync</strong> user and cd to that users home directory:</p>
+
+<p>su btsync</p>
+
+<p>Add the following to <code>~/.bashrc</code> file</p>
+
+<p>umask 002</p>
+
+<p>Now run the following commands:</p>
+
+<div class="highlight"><pre><code class="console"><span class="go">cd</span>
+<span class="go">mkdir btsync &amp;&amp; cd btsync</span>
+<span class="go">wget http://btsync.s3-website-us-east-1.amazonaws.com/btsync_arm.tar.gz</span>
+<span class="go">tar -xvf btsync_arm.tar.gz</span>
+<span class="go">sudo mv btsync /usr/bin/</span>
+<span class="go">cd</span>
+<span class="go">mkdir .sync &amp;&amp; cd .sync</span>
+<span class="go">nano config.json</span>
+</code></pre></div>
+
+<p>Now add the following into the editor, adapt as needed and ensure to put a strong password into the <strong>&quot;password&quot;</strong> value:</p>
+
+<div class="highlight"><pre><code class="json"><span class="p">{</span>
+  <span class="nt">&quot;device_name&quot;</span><span class="p">:</span> <span class="s2">&quot;raspberrypi&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;listening_port&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+  <span class="nt">&quot;storage_path&quot;</span><span class="p">:</span> <span class="s2">&quot;/home/btsync/.sync&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;check_for_updates&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&quot;use_upnp&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&quot;download_limit&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+  <span class="nt">&quot;upload_limit&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+  <span class="nt">&quot;webui&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;listen&quot;</span><span class="p">:</span> <span class="s2">&quot;0.0.0.0:8888&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;login&quot;</span> <span class="p">:</span> <span class="s2">&quot;admin&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;password&quot;</span> <span class="p">:</span> <span class="s2">&quot;password&quot;</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;shared_folders&quot;</span><span class="p">:</span> <span class="p">[]</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p><strong>Note: I had some strange issues when I tried changing the login name value, I am guessing this is a bug. For now I would keep this as &quot;admin&quot;.</strong></p>
+
+<p>Next we need to create an <strong>init.d</strong> script, enter the following:</p>
+
+<p>sudo nano /etc/init.d/btsync</p>
+
+<p>And paste this script in:</p>
+
+<div class="highlight"><pre><code class="bash"><span class="c">#!/bin/sh</span>
+<span class="c">### BEGIN INIT INFO</span>
+<span class="c"># Provides: btsync</span>
+<span class="c"># Required-Start: $local_fs $remote_fs</span>
+<span class="c"># Required-Stop: $local_fs $remote_fs</span>
+<span class="c"># Should-Start: $network</span>
+<span class="c"># Should-Stop: $network</span>
+<span class="c"># Default-Start: 2 3 4 5</span>
+<span class="c"># Default-Stop: 0 1 6</span>
+<span class="c"># Short-Description: Multi-user daemonized version of btsync.</span>
+<span class="c"># Description: Starts the btsync daemon for all registered users.</span>
+<span class="c">### END INIT INFO</span>
+
+<span class="c"># Replace with linux users you want to run BTSync clients for</span>
+<span class="nv">BTSYNC_USERS</span><span class="o">=</span><span class="s2">&quot;btsync&quot;</span>
+<span class="nv">DAEMON</span><span class="o">=</span>/usr/bin/btsync
+
+start<span class="o">()</span> <span class="o">{</span>
+  <span class="k">for </span>btsuser in <span class="nv">$BTSYNC_USERS</span><span class="p">;</span> <span class="k">do</span>
+<span class="k">    </span><span class="nv">HOMEDIR</span><span class="o">=</span><span class="sb">`</span>getent passwd <span class="nv">$btsuser</span> <span class="p">|</span> cut -d: -f6<span class="sb">`</span>
+    <span class="nv">config</span><span class="o">=</span><span class="nv">$HOMEDIR</span>/.sync/config.json
+    <span class="k">if</span> <span class="o">[</span> -f <span class="nv">$config</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+<span class="k">      </span><span class="nb">echo</span> <span class="s2">&quot;Starting BTSync for $btsuser&quot;</span>
+      start-stop-daemon -b -o -c <span class="nv">$btsuser</span> -S -u <span class="nv">$btsuser</span> -x <span class="nv">$DAEMON</span> -- --config <span class="nv">$config</span>
+    <span class="k">else</span>
+<span class="k">      </span><span class="nb">echo</span> <span class="s2">&quot;Couldn&#39;t start BTSync for $btsuser (no $config found)&quot;</span>
+    <span class="k">fi</span>
+<span class="k">  done</span>
+<span class="o">}</span>
+
+stop<span class="o">()</span> <span class="o">{</span>
+  <span class="k">for </span>btsuser in <span class="nv">$BTSYNC_USERS</span><span class="p">;</span> <span class="k">do</span>
+<span class="k">    </span><span class="nv">dbpid</span><span class="o">=</span><span class="sb">`</span>pgrep -fu <span class="nv">$btsuser</span> <span class="nv">$DAEMON</span><span class="sb">`</span>
+    <span class="k">if</span> <span class="o">[</span> ! -z <span class="s2">&quot;$dbpid&quot;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+<span class="k">      </span><span class="nb">echo</span> <span class="s2">&quot;Stopping btsync for $btsuser&quot;</span>
+      start-stop-daemon -o -c <span class="nv">$btsuser</span> -K -u <span class="nv">$btsuser</span> -x <span class="nv">$DAEMON</span>
+    <span class="k">fi</span>
+<span class="k">  done</span>
+<span class="o">}</span>
+
+status<span class="o">()</span> <span class="o">{</span>
+  <span class="k">for </span>btsuser in <span class="nv">$BTSYNC_USERS</span><span class="p">;</span> <span class="k">do</span>
+<span class="k">    </span><span class="nv">dbpid</span><span class="o">=</span><span class="sb">`</span>pgrep -fu <span class="nv">$btsuser</span> <span class="nv">$DAEMON</span><span class="sb">`</span>
+    <span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;$dbpid&quot;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+<span class="k">      </span><span class="nb">echo</span> <span class="s2">&quot;btsync for USER $btsuser: not running.&quot;</span>
+    <span class="k">else</span>
+<span class="k">      </span><span class="nb">echo</span> <span class="s2">&quot;btsync for USER $btsuser: running (pid $dbpid)&quot;</span>
+    <span class="k">fi</span>
+<span class="k">  done</span>
+<span class="o">}</span>
+
+<span class="k">case</span> <span class="s2">&quot;$1&quot;</span> in
+ start<span class="o">)</span>
+start
+<span class="p">;;</span>
+stop<span class="o">)</span>
+stop
+<span class="p">;;</span>
+restart<span class="p">|</span>reload<span class="p">|</span>force-reload<span class="o">)</span>
+stop
+start
+<span class="p">;;</span>
+status<span class="o">)</span>
+status
+<span class="p">;;</span>
+*<span class="o">)</span>
+<span class="nb">echo</span> <span class="s2">&quot;Usage: /etc/init.d/btsync {start|stop|reload|force-reload|restart|status}&quot;</span>
+<span class="nb">exit </span>1
+<span class="k">esac</span>
+
+<span class="nb">exit </span>0
+</code></pre></div>
+
+<p>Save and exit. Now we need to make it executable and register it as a service, issue the following commands:</p>
+
+<p>sudo chmod +x /etc/init.d/btsync
+  sudo rcconf
+  sudo update-rc.d btsync defaults
+  sudo shutdown -r &quot;now&quot;</p>
+
+<p><strong>Note: using rcconf may be an unnecessary step, but I came across an issue where the service would not register and this seemed to help. All you need to do is ensure that the btsync service is marked.</strong></p>
+
+<p>Your Raspberry Pi will now reboot, and all being well you should have the new btsync service start automatically at boot time. To test it navigate to <strong>http://IP<em>OF</em>RASPBERRY_PI:8888/</strong>, you should be prompted for your username and password and see the BitTorrent Sync GUI come up. You can now also test your dynamic DNS and port-forwarding, for example <strong>http://USERNAME.dtdns.net:8888/</strong>.</p>
+
+<p>To get up and running with BitTorrent Sync you need to add shared folders. First click on <strong>Add Folder</strong>, then if you already have an existing secret you can paste it in, or you can create a new one by clicking <strong>Generate</strong>. You can find the hard drive under <strong>/mnt/btsync</strong>.
+Congratulations you now have BitTorrent Sync running on your Raspberry Pi.</p>
+
+<h2>7. Stringer RSS</h2>
+
+<p>If you subscribe to RSS feeds then you might be interested in <a href="http://github.com/swanson/stringer/">Stringer</a>, an awesome, simple, un-social RSS reader and Fever compatible API system. It has a nice web ui, but probably the best thing it has is compatibility with Fever&#39;s API, so you can use an app like Press on Android. This part is adapted from the official documentation on <a href="https://github.com/swanson/stringer/blob/master/VPS.md">GitHub</a>, that guide is much more comprehensive so I recommend reading it for more in-depth information. Installation is pretty straight-forward, start by entering the following commands:</p>
+
+<p>sudo apt-get update
+  sudo apt-get install libxml2-dev libxslt-dev libcurl4-openssl-dev libpq-dev libsqlite3-dev build-essential postgresql libreadline-dev</p>
+
+<p>Now you will need to create a database for Stringer, enter the following (you&#39;ll need to create a password):</p>
+
+<p>sudo -u postgres createuser -D -A -P stringer
+  sudo -u postgres createdb -O stringer stringer_live</p>
+
+<p>Next we&#39;ll add a user for Stringer and login</p>
+
+<p>adduser stringer --shell /bin/bash
+  su stringer</p>
+
+<p>Now we&#39;re going to install Ruby using Rbenv, be prepared this is going to take a very, very long time (specifically the command <code>rbenv install</code>). When I did it, the time to complete was at least an hour.</p>
+
+<p>cd
+  git clone git://github.com/sstephenson/rbenv.git .rbenv
+  echo &#39;export PATH=&quot;$HOME/.rbenv/bin:$PATH&quot;&#39; &gt;&gt; $HOME/.bash<em>profile
+  echo &#39;eval &quot;$(rbenv init -)&quot;&#39; &gt;&gt; $HOME/.bash</em>profile
+  git clone git://github.com/sstephenson/ruby-build.git $HOME/.rbenv/plugins/ruby-build
+  source ~/.bash_profile
+  rbenv install 1.9.3-p448
+  rbenv local 1.9.3-p448
+  rbenv rehash
+  gem install bundler
+  rbenv rehash</p>
+
+<p>Now after that huge wait, we can install Stringer itself:</p>
+
+<p>git clone https://github.com/swanson/stringer.git
+  cd stringer
+  bundle install
+  rbenv rehash</p>
+
+<p>Next we need to set some environment variables, just ensure that you adapt the following so that it matches the password you created earlier:</p>
+
+<p>echo &#39;export STRINGER<em>DATABASE=&quot;stringer</em>live&quot;&#39; &gt;&gt; $HOME/.bash<em>profile
+  echo &#39;export STRINGER</em>DATABASE<em>USERNAME=&quot;stringer&quot;&#39; &gt;&gt; $HOME/.bash</em>profile
+  echo &#39;export STRINGER<em>DATABASE</em>PASSWORD=&quot;EDIT<em>ME&quot;&#39; &gt;&gt; $HOME/.bash</em>profile
+  echo &#39;export RACK<em>ENV=&quot;production&quot;&#39; &gt;&gt; $HOME/.bash</em>profile
+  source ~/.bash<em>profile
+  cd $HOME/stringer
+  rake db:migrate RACK</em>ENV=production</p>
+
+<p>Now finally we can run the application itself:</p>
+
+<p>bundle exec foreman start</p>
+
+<p>The only thing left we need to do is setup a cron job for Stringer, enter the following to edit your crontab:</p>
+
+<p>crontab -e</p>
+
+<p>And add these lines:</p>
+
+<p>SHELL=/bin/bash
+  PATH=/home/stringer/.rbenv/bin:/bin/:/usr/bin:/usr/local/bin/:/usr/local/sbin
+  */10 * * * *  source $HOME/.bash<em>profile; cd $HOME/stringer/; bundle exec rake fetch</em>feeds;</p>
+
+<p>Now, if you set up port-forwarding ealier correctly and are using dynamic DNS you should be able to see Stringer at either of these example locations:</p>
+
+<p>http://192.168.1.10:5000 # from inside the lan
+  http://user.dtdns.net:5000 # from anywhere</p>
+
+<h2>Conclusion</h2>
+
+<p>This is an exhaustive guide and I mainly made it for my own reference, but if you found it helpful or have any suggestions please leave them in the comments. Thanks for reading.</p>
+
+<h5>Footnotes</h5>
+
+<p>[1] There is also a GUI version Nmap.
+[2] <a href="http://git-scm.com/"><strong>Git</strong></a> is a free and open source distributed version control system designed to handle everything from small to very large projects with speed and efficiency.
+[3] <a href="http://htop.sourceforge.net/"><strong>Htop</strong></a> is an interactive system-monitor process-viewer written for Linux. It is designed to replace the Unix program top. It shows a frequently updated list of the processes running on a computer, normally ordered by the amount of CPU usage. Unlike top, htop provides a full list of processes running, instead of the top resource-consuming processes. Htop uses color and gives visual information about processor, swap and memory status.
+[4] <a href="http://www.vim.org/"><strong>Vim</strong></a> is a highly configurable text editor built to enable efficient text editing. It is an improved version of the vi editor distributed with most UNIX systems.</p>
+
+</div>
+
+
+    </main>
+
+
+      <div class="footer">
+        <div class="contact">
+          <p>&copy; Daniel Davidson. Licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
