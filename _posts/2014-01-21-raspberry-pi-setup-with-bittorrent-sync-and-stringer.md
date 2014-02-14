@@ -1,8 +1,8 @@
 ---
 layout: post
-title: "Raspberry Pi with Bittorrent Sync"
+title: "Raspberry Pi &amp; Bittorrent Sync"
 date: 2014-01-21 03:06:51
-categories: raspberry pi
+categories: raspberry-pi
 ---
 
 I love the Raspberry Pi. When I purchased it was to have a simple low-power 24/7 server which could do a few cron jobs to backup remote servers, pretty simple stuff. I have since added a couple of really awesome services, one is [Bittorrent Sync](http://labs.bittorrent.com/experiments/sync.html) which although (currently) closed-source is the best de-centralised file-sync system I have used when compared to Dropbox. The other is [Stringer](https://github.com/swanson/stringer), which is a really nice, simple RSS reader which includes a clone of the Fever API so you can use compatible apps on Android/iPhone etc.

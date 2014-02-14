@@ -1,0 +1,114 @@
+@import 'sass/normalize';
+@import 'sass/lib/bourbon/bourbon';
+@import 'sass/lib/bitters/bitters';
+@import 'sass/grid';
+@import 'sass/lib/neat/neat';
+
+div.container {
+  @include outer-container;
+}
+
+div.wrapper-inverse {
+  background: #15191D;
+  // border-bottom: 10px solid #F7A21B;
+}
+
+div.footer,
+div.main {
+  @include span-columns(12);
+}
+
+div.header {
+  @include span-columns(12);
+  @include omega();
+  // border-bottom: 1px solid $light-gray;
+  // margin-bottom: em(30);
+  padding: em(0) 0;
+  div.header-info {
+    // @include span-columns(6);
+  }
+  p {
+    color: $medium-gray;
+  }
+  h1 {
+    // font-family: 'Source Code Pro';
+    font-family: 'Abril Fatface', cursive;
+    margin: 0;
+    // text-transform: uppercase;
+    font-weight:100;
+    font-size: $base-font-size * 4.5;
+    a {
+      color: white;
+      &:hover {
+        color: $blue;
+      }
+    }
+  }
+}
+
+nav.nav-primary {
+  // @include span-columns(6);
+  ul {
+    margin: em(30) 0 0;
+    li {
+      float: left;
+      a {
+        display: block;
+        padding: 0 .2em;
+        margin: 0 .5em;
+        color: white;
+      }
+      &:first-child a {
+        margin-left: 0
+      }
+    }
+  }
+}
+
+div.footer {
+  color: $medium-gray;
+  margin-top: em(30);
+  padding: em(30) 0;
+  border-top: 1px solid $light-gray;
+}
+
+h1.post-title {
+  // font-family: 'Abril Fatface', cursive;
+  // color: #c90707;
+  // font-weight: 100;
+  // text-transform: uppercase;
+}
+
+pre,
+code {
+  font-family: 'Source Code Pro', sans-serif;
+}
+
+/* standard */
+.post pre {
+  border: 1px solid $light-gray;
+  background-color: #efefef;
+  padding: em(10);
+}
+
+.post code {
+  border: 1px solid $light-gray;
+  background-color: #efefef;
+}
+
+.post pre code {
+  border: none;
+}
+
+/* terminal */
+.post pre.terminal {
+  border: 1px solid #000;
+  background-color: $dark-gray;
+  color: #FFF;
+}
+
+.post pre.terminal code {
+  background-color: $dark-gray;
+}
+
+@import 'sass/syntax';

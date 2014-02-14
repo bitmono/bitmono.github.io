@@ -1,26 +1,34 @@
 <!DOCTYPE html>
 <html>
-  <head>
-      <meta charset="utf-8">
-      <title>{{ page.title }}</title>
-      <link rel="stylesheet" href="{{ site.baseurl }}css/screen.css">
-      <link rel="stylesheet" href="{{ site.baseurl }}css/syntax.css">
-  </head>
-  <body>
-    <div class="site">
+<head>
+    <meta charset="utf-8">
+    <title>{{ page.title }}</title>
+    <link href='http://fonts.googleapis.com/css?family=Source+Code+Pro:400,700|Abril+Fatface|Open+Sans:300italic,400italic,700italic,800italic,400,300,700,800' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="{{ site.baseurl }}css/application.css">
+</head>
+<body>
+  <div class="wrapper-inverse">
+
+    <div class="container">
 
       <div class="header">
-        <h1 class="title"><a href="/">{{ site.name }}</a></h1>
-        <p>A blog about development, technology and random stuff from /dev/null.</p>
+
+        <div class="header-info">
+          <h1 class="title"><a href="/">{{ site.name }}</a></h1>
+          <p>A blog by Daniel Davidson; web developer, tech enthusiast and geek.</p>
+        </div>
+
+<!--         <nav class="nav-primary" role="navigation" >
+            <ul>
+                {% for p in site.pages %}
+                <li>
+                  <a {% if p.url == page.url %}class="active"{% endif %} href="{{ p.url }}">{{ p.title }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </nav> -->
       </div>
+    </div>
+  </div>
 
-      <nav class="nav-primary" role="navigation" >
-          <ul>
-              {% for p in site.pages %}
-              <li>
-                <a {% if p.url == page.url %}class="active"{% endif %} href="{{ p.url }}">{{ p.title }}</a>
-              </li>
-              {% endfor %}
-          </ul>
-      </nav>
-
+  <div class="container">
