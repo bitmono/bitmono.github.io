@@ -6,7 +6,7 @@ categories: raspberry-pi
 post_author: "Daniel Davidson"
 ---
 
-![Raspberry Pi]({{ site.url }}/images/Raspberry_Pi_-_Model_A.jpg)
+![Raspberry Pi]({{ site.baseurl }}images/Raspberry_Pi_-_Model_A.jpg)
 
 The Raspberry Pi is an amazing little device. When I purchased it was to have a simple low-power 24/7 server which could do a few cron jobs to backup remote servers, pretty simple stuff. I have since added a couple of really awesome services, one is [Bittorrent Sync](http://labs.bittorrent.com/experiments/sync.html) which although (currently) closed-source is the best de-centralised file-sync system I have used when compared to Dropbox. The other is [Stringer](https://github.com/swanson/stringer), which is a really nice, simple RSS reader which includes a clone of the Fever API so you can use compatible apps on Android/iPhone etc.
 
