@@ -1,9 +1,19 @@
 
       <div class="footer">
+        <nav class="nav-primary" role="navigation" >
+          <ul>
+            {% for p in site.pages %}
+            <li>
+              <a {% if p.url == page.url %}class="active"{% endif %} href="{{ p.url }}">{{ p.title }}</a>
+            </li>
+            {% endfor %}
+          </ul>
+        </nav>
         <div class="contact">
-          <p>Copyright &copy; Daniel Davidson {{ site.time | date: '%Y' }}. Licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>. Powered by <a href="http://jekyllrb.com/">Jekyll</a> and served by <a href="https://github.com/">Github Pages</a>.</p>
+          <p>Copyright &copy; {{ site.time | date: '%Y' }}. Powered by <a href="http://jekyllrb.com/">Jekyll</a>. Served by <a href="https://github.com/">Github Pages</a>.</p>
         </div>
       </div>
     </div>
-  </body>
+  </div>
+</body>
 </html>

@@ -2,72 +2,42 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Raspberry Pi &amp; Bittorrent Sync</title>
-    <link href='http://fonts.googleapis.com/css?family=Source+Code+Pro:400,700|Abril+Fatface|Open+Sans:300italic,400italic,700italic,800italic,400,300,700,800' rel='stylesheet' type='text/css'>
+    <title>Set-up a Raspberry Pi with dynamic IP and Bittorrent Sync</title>
+    <link href='http://fonts.googleapis.com/css?family=Source+Code+Pro:400,700|PT+Sans:700,700italic|PT+Sans+Narrow:700|PT+Serif:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="/css/application.css">
 </head>
 <body>
-  <div class="wrapper-inverse">
-
-    <div class="container">
-
-      <div class="header">
-
-        <div class="header-info">
-          <h1 class="title"><a href="/">Bitmono</a></h1>
-          <p>A blog by Daniel Davidson; web developer, tech enthusiast and geek.</p>
-        </div>
-
-<!--         <nav class="nav-primary" role="navigation" >
-            <ul>
-                
-                <li>
-                  <a  href="/about.html">About</a>
-                </li>
-                
-                <li>
-                  <a  href="/blog.html">Blog</a>
-                </li>
-                
-                <li>
-                  <a  href="/contact.html">Contact</a>
-                </li>
-                
-                <li>
-                  <a  href="/index.html">Bitmono</a>
-                </li>
-                
-                <li>
-                  <a  href="/welcome.html">Bitmono</a>
-                </li>
-                
-            </ul>
-        </nav> -->
-      </div>
-    </div>
+<div class="container">
+  <div class="header">
+    <h1 class="title"><a href="/">Bitmono</a></h1>
+    <p>A blog about programming, tech and life.</p>
   </div>
 
-  <div class="container">
 
+  <div class="main">
 
-    <div class="main">
+      <div class="article-header">
 
-      <h1 class="post-title">Raspberry Pi &amp; Bittorrent Sync</h1>
+    <h2 class="post-title">Set-up a Raspberry Pi with dynamic IP and Bittorrent Sync</h2>
+    <p class="meta">Posted 21 Jan 2014 by <a href="#">Daniel Davidson</a></p>
 
-      <p class="meta">21 Jan 2014</p>
+  </div>
 
-<div class="post">
-<p>I love the Raspberry Pi. When I purchased it was to have a simple low-power 24/7 server which could do a few cron jobs to backup remote servers, pretty simple stuff. I have since added a couple of really awesome services, one is <a href="http://labs.bittorrent.com/experiments/sync.html">Bittorrent Sync</a> which although (currently) closed-source is the best de-centralised file-sync system I have used when compared to Dropbox. The other is <a href="https://github.com/swanson/stringer">Stringer</a>, which is a really nice, simple RSS reader which includes a clone of the Fever API so you can use compatible apps on Android/iPhone etc.</p>
+  <div class="post">
+
+    <p><img src="http://localhost:4000/images/Raspberry_Pi_-_Model_A.jpg" alt="Raspberry Pi"></p>
+
+<p>The Raspberry Pi is an amazing little device. When I purchased it was to have a simple low-power 24/7 server which could do a few cron jobs to backup remote servers, pretty simple stuff. I have since added a couple of really awesome services, one is <a href="http://labs.bittorrent.com/experiments/sync.html">Bittorrent Sync</a> which although (currently) closed-source is the best de-centralised file-sync system I have used when compared to Dropbox. The other is <a href="https://github.com/swanson/stringer">Stringer</a>, which is a really nice, simple RSS reader which includes a clone of the Fever API so you can use compatible apps on Android/iPhone etc.</p>
 
 <p>Although I loved the setup I had on the Raspberry Pi I felt like things had become a bit messy during various experiments, so I decided to start over from scratch so I could do a clean installation and document the entire process for reference. This is a big guide, so I thought other people might find it interesting and use/adapt it for their own needs or point out some things I could have done better (feel free to leave comments). Here is the complete walkthrough.</p>
 
-<h2>Preamble</h2>
+<h3>Preamble</h3>
 
 <p>Firstly a word of caution, if you are completely new to the command line this may not be for you. There will be times where you need at least basic *nix knowledge which is not documented below.</p>
 
 <p>Secondly I will using a Mac throughout this guide, as much as love Linux I haven&#39;t quite switched over yet on the desktop. The only real differences of note are the preparation of the SDCard, everything else is done directly on the Raspberry Pi over SSH on the Raspberry Pi so the commands will be identical.</p>
 
-<h2>1. Components</h2>
+<h3>1. Components</h3>
 
 <p>This will be a <a href="http://en.wikipedia.org/wiki/Headless_system">headless system</a>, no monitor is required. The most expensive components here will be the USB Hard Drive(s), but hopefully you will have an old one laying around you can repurpose. I am not using WiFi for speed reasons. Here is the complete list:</p>
 
@@ -79,7 +49,7 @@
 <li>Ethernet and USB cables</li>
 </ol>
 
-<h2>2. Get Raspian &quot;wheezy&quot; on an SD card</h2>
+<h3>2. Get Raspian &quot;wheezy&quot; on an SD card</h3>
 
 <p>If you have an SD card with Raspian &quot;wheezy&quot; pre-installed you can skip this and go to the next step. This step is to prepare the SD card with the standard Raspian &quot;wheezy&quot; image.</p>
 
@@ -92,11 +62,11 @@
 
 <p>Compare the resulting SHA-1. If it matches, unzip the file so you have uncompressed version (this will end in <strong>.img</strong>) and delete the zipped version.</p>
 
-<h3>Warning</h3>
+<h4>Warning</h4>
 
 <p>What follows next are instructions adapted from <a href="http://elinux.org/RPi_Easy_SD_Card_Setup">http://elinux.org/RPi<em>Easy</em>SD<em>Card</em>Setup</a>. I recommend reading that page as it has much more comprehensive instructions and includes more platforms, this is Mac specific. This is the most dangerous step throughout this guide as doing this wrong will result in overwriting an incorrect disk, which guarantees losing data and facing a potential catastrophe. I am still noting the basic instructions here for completeness, but if you do not understand these commands exercise extreme caution and go through the instructions linked above.</p>
 
-<h3>dd</h3>
+<h4>dd</h4>
 
 <p>The next step is to <strong>dd</strong> the Raspian image onto our SD card, start by running the following command:</p>
 
@@ -127,11 +97,11 @@
 
 <p>You can now insert the SD card into your Raspberry Pi.</p>
 
-<h2>3. Initial setup</h2>
+<h3>3. Initial setup</h3>
 
 <p>At this point you will have the Raspbian &quot;wheezy&quot; SD card inserted into your Raspberry Pi, have connected the ethernet cable (onto your local network), have plugged-in the USB hard drive routed via the powered USB hub and the USB power adapter for the Raspberry Pi which is now powered on. Let&#39;s start talking to your Raspberry Pi.</p>
 
-<h3>Getting the IP address</h3>
+<h4>Getting the IP address</h4>
 
 <p>The first thing we need is to find out the IP address of the Raspberry Pi. Many routers include a topology of the local network inside the control panel, if you can log in and find out the IP address from their it is certainly the easiest method. Another way is a tool such as <a href="http://nmap.org/">Nmap</a>, a command line utility[1]. On a Mac with <a href="http://brew.sh/">Homebrew</a> installed it is simply a matter of <code>brew install nmap</code> to get it installed, for other platforms just following the instructions on Nmap&#39;s website. Once installed you can issue the following command:</p>
 
@@ -150,7 +120,7 @@
 
 <p>You can see it found a Debian based OS on the network and it only 1 open port, 22/SSH. This is almost certainly the Raspberry Pi so we now have the IP address of <strong>192.168.1.10</strong>.</p>
 
-<h3>SSH</h3>
+<h4>SSH</h4>
 
 <p>With the IP address in hand we can SSH into our Raspberry Pi. The default username and password in Raspian &quot;wheezy&quot; are <strong>pi</strong> and <strong>raspberry</strong> respectively, so in the terminal issue the following command:</p>
 
@@ -158,7 +128,7 @@
 
 <p>If you need to confirm adding to known hosts do so, and enter the default password above. If everything went well you should now be sitting at a command prompt showing something like <strong>pi@raspberrypi</strong>. We&#39;re now logged into the Raspberry Pi.</p>
 
-<h3>raspi-config</h3>
+<h4>raspi-config</h4>
 
 <p>One thing you may have noticed was the following statement shown when you logged-in <strong>&quot;NOTICE: the software on this Raspberry Pi has not been fully configured. Please run &#39;sudo raspi-config&#39;&quot;</strong>. Even if this mesaage was not shown let&#39;s go through the initial configuration. Run the following command:</p>
 
@@ -179,11 +149,11 @@
 
 <p>Now exit by selecting <strong>Finish</strong> and rebooting. Your connection will be closed so connect again with SSH using the same command earlier (note you will need to wait until the Raspberry Pi has fully rebooted).</p>
 
-<h2>4. Users, security, port forwarding and dynamic DNS.</h2>
+<h3>4. Users, security, port forwarding and dynamic DNS.</h3>
 
 <p>Since this machine is going to be internet facing, we need some security measures in place. For this reason we want to start by creating some new users for accessing the machine.</p>
 
-<h3>Adding users</h3>
+<h4>Adding users</h4>
 
 <p>For the first user you can replace <code>raspi</code> with a user name of your choice:</p>
 
@@ -226,7 +196,7 @@
 
 <p><em>One thing you might want to consider if you even want to keep the default user &#39;pi&#39; as this is a known user of the Raspberry Pi so presents a potential security threat.</em></p>
 
-<h3>iptables</h3>
+<h4>iptables</h4>
 
 <p><a href="http://www.netfilter.org/projects/iptables/index.html">iptables</a> is the userspace command line program used to configure the Linux 2.4.x and later packet filtering ruleset. I won&#39;t go into details for each of these commands but if you do want a much more thorough walkthough I recommend the guide <a href="https://www.digitalocean.com/community/articles/how-to-set-up-a-firewall-using-ip-tables-on-ubuntu-12-04">How to Set Up a Firewall Using IP Tables on Ubuntu 12.04</a> by <a href="https://www.digitalocean.com/">Digital Ocean</a>. Here are the commands:</p>
 
@@ -271,7 +241,7 @@
 
 <p>On the next reboot these rules will remain in place.</p>
 
-<h3>Fail2ban</h3>
+<h4>Fail2ban</h4>
 
 <p>From <a href="http://www.fail2ban.org/">http://www.fail2ban.org/</a>:</p>
 
@@ -300,7 +270,7 @@
 
 <p>If you ever want to check the logs you will find them in <code>/var/log/fail2ban.log</code>.</p>
 
-<h3>Port forwarding and dynamic DNS</h3>
+<h4>Port forwarding and dynamic DNS</h4>
 
 <p>This is optional if you only want BitTorrent Sync then you probably don&#39;t need this. Personally I like the idea of having access from outside my local network if needed, but it does mean you&#39;re increasing your attack surface. If you are worried about this then you should consider skipping this step.</p>
 
@@ -328,13 +298,13 @@
 
 <p>Will be mapped to the Stringer web interface and allow us to use <code>http://user.dtdns.net:5000/fever</code> as our Fever API compatible server address which we will setup shortly.</p>
 
-<h2>5. USB hard drive setup</h2>
+<h3>5. USB hard drive setup</h3>
 
 <p>First, a quick note. As I was compiling this guide, I decided to switch around a couple of things in the physical setup of the Raspberry Pi, one of those was the USB cable for the hard drive. This cable was bad, but it was only after about 12 hours of use before I realised it. These were strange intermittent connection issues, sometimes it would be fine for several hours, other times it would not mount at all, other times it would show up and be write-locked etc. I thought I was doing something drastically wrong with my configuration so tried many attempts to repair permissions etc, before finally realising it was a hardware issue when the following popped-up <code>ls: reading directory .: Input/output error</code>. Ugh. Anyway, the lesson here if you could just remove your palm from your face, is to always check your cables, don&#39;t be an idiot like me!</p>
 
 <p>Now let&#39;s get this USB disk set up. For paranoia reasons I like to encrypt any external hard drives I use. On Mac it is built-in, on Linux there are many options but we will be using dm-crypt LUKS which seems excellent and means if someone walks off with your USB drive they can&#39;t simply mount it and browse all your files.</p>
 
-<h3>USB device ID</h3>
+<h4>USB device ID</h4>
 
 <p>We need to first get the ID of the USB drive. First ensure the USB disk is unplugged, and then plug connect it and allow it to power up and immediately enter the following command:</p>
 
@@ -355,7 +325,7 @@
 
 <p>Now make a note of your device ID, if you get this wrong in the following steps you could end up overwriting the SD card or another partition which would be a serious pain.</p>
 
-<h3>LUKS</h3>
+<h4>LUKS</h4>
 
 <p>Now we&#39;re going to employ <a href="https://code.google.com/p/cryptsetup/">LUKS</a> for disk encryption. As credit, this part of the guide is adapted from <a href="http://xmodulo.com/2013/01/how-to-create-encrypted-disk-partition-on-linux.html">How to create an encrypted disk partition on Linux</a>, I recommend reading the full article if you would like more detailed information. We start by issuing the following commands:</p>
 
@@ -468,7 +438,7 @@
 
 <p><em>Tip: if you would like to the output of *</em>df** with megabytes, use <code>df -m</code> instead.*</p>
 
-<h3>Mount LUKS partitions automatically</h3>
+<h4>Mount LUKS partitions automatically</h4>
 
 <p>There is no point having encrypted drives if we need to SSH in, enter passphrases and run these commands everytime we we reboot. Follow these instructions to have them mounted automatically. Enter the following command, again adapt it so you have the same device ID:</p>
 
@@ -506,7 +476,7 @@
 
 <p>Now reboot, test if the partitions are auto-mounted, and see if you can write to the partition as a normal user.</p>
 
-<h2>6. BitTorrent Sync</h2>
+<h3>6. BitTorrent Sync</h3>
 
 <p>I&#39;ll admit, so far this has been pretty boring stuff, now we can start adding more fun software like Bittorrent Sync. First let&#39;s get a few basic packages such as Git[2], htop[3] and Vim[4], run the following command:</p>
 
@@ -648,7 +618,7 @@ status
 <p>To get up and running with BitTorrent Sync you need to add shared folders. First click on <strong>Add Folder</strong>, then if you already have an existing secret you can paste it in, or you can create a new one by clicking <strong>Generate</strong>. You can find the hard drive under <strong>/mnt/btsync</strong>.
 Congratulations you now have BitTorrent Sync running on your Raspberry Pi.</p>
 
-<h2>7. Stringer RSS</h2>
+<h3>7. Stringer RSS</h3>
 
 <p>If you subscribe to RSS feeds then you might be interested in <a href="http://github.com/swanson/stringer/">Stringer</a>, an awesome, simple, un-social RSS reader and Fever compatible API system. It has a nice web ui, but probably the best thing it has is compatibility with Fever&#39;s API, so you can use an app like Press on Android. This part is adapted from the official documentation on <a href="https://github.com/swanson/stringer/blob/master/VPS.md">GitHub</a>, that guide is much more comprehensive so I recommend reading it for more in-depth information. Installation is pretty straight-forward, start by entering the following commands:</p>
 
@@ -715,29 +685,56 @@ Congratulations you now have BitTorrent Sync running on your Raspberry Pi.</p>
 <p>http://192.168.1.10:5000 # from inside the lan
   http://user.dtdns.net:5000 # from anywhere</p>
 
-<h2>Conclusion</h2>
+<h3>Conclusion</h3>
 
 <p>This is an exhaustive guide and I mainly made it for my own reference, but if you found it helpful or have any suggestions please leave them in the comments. Thanks for reading.</p>
 
 <h5>Footnotes</h5>
 
 <p>[1] There is also a GUI version Nmap.
-[2] <a href="http://git-scm.com/"><strong>Git</strong></a> is a free and open source distributed version control system designed to handle everything from small to very large projects with speed and efficiency.
-[3] <a href="http://htop.sourceforge.net/"><strong>Htop</strong></a> is an interactive system-monitor process-viewer written for Linux. It is designed to replace the Unix program top. It shows a frequently updated list of the processes running on a computer, normally ordered by the amount of CPU usage. Unlike top, htop provides a full list of processes running, instead of the top resource-consuming processes. Htop uses color and gives visual information about processor, swap and memory status.
-[4] <a href="http://www.vim.org/"><strong>Vim</strong></a> is a highly configurable text editor built to enable efficient text editing. It is an improved version of the vi editor distributed with most UNIX systems.</p>
-
-</div>
+[2] <a href="http://git-scm.com/">Git</a> is a free and open source distributed version control system designed to handle everything from small to very large projects with speed and efficiency.
+[3] <a href="http://htop.sourceforge.net/">Htop</a> is an interactive system-monitor process-viewer written for Linux. It is designed to replace the Unix program top. It shows a frequently updated list of the processes running on a computer, normally ordered by the amount of CPU usage. Unlike top, htop provides a full list of processes running, instead of the top resource-consuming processes. Htop uses color and gives visual information about processor, swap and memory status.
+[4] <a href="http://www.vim.org/">Vim</a> is a highly configurable text editor built to enable efficient text editing. It is an improved version of the vi editor distributed with most UNIX systems.</p>
 
 
-    </div>
+  </div>
+
+
+  </div>
 
 
       <div class="footer">
+        <nav class="nav-primary" role="navigation" >
+          <ul>
+            
+            <li>
+              <a  href="/about.html">About</a>
+            </li>
+            
+            <li>
+              <a  href="/blog.html">Blog</a>
+            </li>
+            
+            <li>
+              <a  href="/contact.html">Contact</a>
+            </li>
+            
+            <li>
+              <a  href="/index.html">Bitmono</a>
+            </li>
+            
+            <li>
+              <a  href="/welcome.html">Bitmono</a>
+            </li>
+            
+          </ul>
+        </nav>
         <div class="contact">
-          <p>Copyright &copy; Daniel Davidson 2014. Licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>. Powered by <a href="http://jekyllrb.com/">Jekyll</a> and served by <a href="https://github.com/">Github Pages</a>.</p>
+          <p>Copyright &copy; 2014. Powered by <a href="http://jekyllrb.com/">Jekyll</a>. Served by <a href="https://github.com/">Github Pages</a>.</p>
         </div>
       </div>
     </div>
-  </body>
+  </div>
+</body>
 </html>
 

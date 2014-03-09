@@ -1,21 +1,24 @@
 ---
 layout: post
-title: "Raspberry Pi &amp; Bittorrent Sync"
+title: "Set-up a Raspberry Pi with dynamic IP and Bittorrent Sync"
 date: 2014-01-21 03:06:51
 categories: raspberry-pi
+post_author: "Daniel Davidson"
 ---
 
-I love the Raspberry Pi. When I purchased it was to have a simple low-power 24/7 server which could do a few cron jobs to backup remote servers, pretty simple stuff. I have since added a couple of really awesome services, one is [Bittorrent Sync](http://labs.bittorrent.com/experiments/sync.html) which although (currently) closed-source is the best de-centralised file-sync system I have used when compared to Dropbox. The other is [Stringer](https://github.com/swanson/stringer), which is a really nice, simple RSS reader which includes a clone of the Fever API so you can use compatible apps on Android/iPhone etc.
+![Raspberry Pi]({{ site.url }}/images/Raspberry_Pi_-_Model_A.jpg)
+
+The Raspberry Pi is an amazing little device. When I purchased it was to have a simple low-power 24/7 server which could do a few cron jobs to backup remote servers, pretty simple stuff. I have since added a couple of really awesome services, one is [Bittorrent Sync](http://labs.bittorrent.com/experiments/sync.html) which although (currently) closed-source is the best de-centralised file-sync system I have used when compared to Dropbox. The other is [Stringer](https://github.com/swanson/stringer), which is a really nice, simple RSS reader which includes a clone of the Fever API so you can use compatible apps on Android/iPhone etc.
 
 Although I loved the setup I had on the Raspberry Pi I felt like things had become a bit messy during various experiments, so I decided to start over from scratch so I could do a clean installation and document the entire process for reference. This is a big guide, so I thought other people might find it interesting and use/adapt it for their own needs or point out some things I could have done better (feel free to leave comments). Here is the complete walkthrough.
 
-## Preamble
+### Preamble
 
 Firstly a word of caution, if you are completely new to the command line this may not be for you. There will be times where you need at least basic *nix knowledge which is not documented below.
 
 Secondly I will using a Mac throughout this guide, as much as love Linux I haven't quite switched over yet on the desktop. The only real differences of note are the preparation of the SDCard, everything else is done directly on the Raspberry Pi over SSH on the Raspberry Pi so the commands will be identical.
 
-## 1. Components
+### 1. Components
 
 This will be a [headless system](http://en.wikipedia.org/wiki/Headless_system), no monitor is required. The most expensive components here will be the USB Hard Drive(s), but hopefully you will have an old one laying around you can repurpose. I am not using WiFi for speed reasons. Here is the complete list:
 
@@ -25,7 +28,7 @@ This will be a [headless system](http://en.wikipedia.org/wiki/Headless_system), 
 4. Powered USB hub[1]
 5. Ethernet and USB cables
 
-## 2. Get Raspian "wheezy" on an SD card
+### 2. Get Raspian "wheezy" on an SD card
 
 If you have an SD card with Raspian "wheezy" pre-installed you can skip this and go to the next step. This step is to prepare the SD card with the standard Raspian "wheezy" image.
 
@@ -39,11 +42,11 @@ shasum /path/to/file
 
 Compare the resulting SHA-1. If it matches, unzip the file so you have uncompressed version (this will end in **.img**) and delete the zipped version.
 
-### Warning
+#### Warning
 
 What follows next are instructions adapted from [http://elinux.org/RPi_Easy_SD_Card_Setup](http://elinux.org/RPi_Easy_SD_Card_Setup). I recommend reading that page as it has much more comprehensive instructions and includes more platforms, this is Mac specific. This is the most dangerous step throughout this guide as doing this wrong will result in overwriting an incorrect disk, which guarantees losing data and facing a potential catastrophe. I am still noting the basic instructions here for completeness, but if you do not understand these commands exercise extreme caution and go through the instructions linked above.
 
-### dd
+#### dd
 
 The next step is to **dd** the Raspian image onto our SD card, start by running the following command:
 
@@ -79,11 +82,11 @@ sudo diskutil eject /dev/RAW_DISK_NAME
 
 You can now insert the SD card into your Raspberry Pi.
 
-## 3. Initial setup
+### 3. Initial setup
 
 At this point you will have the Raspbian "wheezy" SD card inserted into your Raspberry Pi, have connected the ethernet cable (onto your local network), have plugged-in the USB hard drive routed via the powered USB hub and the USB power adapter for the Raspberry Pi which is now powered on. Let's start talking to your Raspberry Pi.
 
-### Getting the IP address
+#### Getting the IP address
 
 The first thing we need is to find out the IP address of the Raspberry Pi. Many routers include a topology of the local network inside the control panel, if you can log in and find out the IP address from their it is certainly the easiest method. Another way is a tool such as [Nmap](http://nmap.org/), a command line utility[1]. On a Mac with [Homebrew](http://brew.sh/) installed it is simply a matter of `brew install nmap` to get it installed, for other platforms just following the instructions on Nmap's website. Once installed you can issue the following command:
 
@@ -103,7 +106,7 @@ This will take a few minutes and spit out a lot of information, what you want is
 
 You can see it found a Debian based OS on the network and it only 1 open port, 22/SSH. This is almost certainly the Raspberry Pi so we now have the IP address of **192.168.1.10**.
 
-### SSH
+#### SSH
 
 With the IP address in hand we can SSH into our Raspberry Pi. The default username and password in Raspian "wheezy" are **pi** and **raspberry** respectively, so in the terminal issue the following command:
 
@@ -111,7 +114,7 @@ With the IP address in hand we can SSH into our Raspberry Pi. The default userna
 
 If you need to confirm adding to known hosts do so, and enter the default password above. If everything went well you should now be sitting at a command prompt showing something like **pi@raspberrypi**. We're now logged into the Raspberry Pi.
 
-### raspi-config
+#### raspi-config
 
 One thing you may have noticed was the following statement shown when you logged-in **"NOTICE: the software on this Raspberry Pi has not been fully configured. Please run 'sudo raspi-config'"**. Even if this mesaage was not shown let's go through the initial configuration. Run the following command:
 
@@ -130,11 +133,11 @@ Inside raspi-config we need to do the following:
 
 Now exit by selecting **Finish** and rebooting. Your connection will be closed so connect again with SSH using the same command earlier (note you will need to wait until the Raspberry Pi has fully rebooted).
 
-## 4. Users, security, port forwarding and dynamic DNS.
+### 4. Users, security, port forwarding and dynamic DNS.
 
 Since this machine is going to be internet facing, we need some security measures in place. For this reason we want to start by creating some new users for accessing the machine.
 
-### Adding users
+#### Adding users
 
 For the first user you can replace `raspi` with a user name of your choice:
 
@@ -177,7 +180,7 @@ Now reload SSH
 
 *One thing you might want to consider if you even want to keep the default user 'pi' as this is a known user of the Raspberry Pi so presents a potential security threat.*
 
-### iptables
+#### iptables
 
 [iptables](http://www.netfilter.org/projects/iptables/index.html) is the userspace command line program used to configure the Linux 2.4.x and later packet filtering ruleset. I won't go into details for each of these commands but if you do want a much more thorough walkthough I recommend the guide [How to Set Up a Firewall Using IP Tables on Ubuntu 12.04](https://www.digitalocean.com/community/articles/how-to-set-up-a-firewall-using-ip-tables-on-ubuntu-12-04) by [Digital Ocean](https://www.digitalocean.com/). Here are the commands:
 
@@ -225,7 +228,7 @@ You will be asked if you want to save current IPv4 and IPv6 rules, answer yes to
 
 On the next reboot these rules will remain in place.
 
-### Fail2ban
+#### Fail2ban
 
 From [http://www.fail2ban.org/](http://www.fail2ban.org/):
 
@@ -254,7 +257,7 @@ If you would like to see what rules Fail2ban has in effect you can do so with th
 
 If you ever want to check the logs you will find them in `/var/log/fail2ban.log`.
 
-### Port forwarding and dynamic DNS
+#### Port forwarding and dynamic DNS
 
 This is optional if you only want BitTorrent Sync then you probably don't need this. Personally I like the idea of having access from outside my local network if needed, but it does mean you're increasing your attack surface. If you are worried about this then you should consider skipping this step.
 
@@ -282,13 +285,13 @@ Will be mapped to the Bittorrent Sync control panel and:
 
 Will be mapped to the Stringer web interface and allow us to use `http://user.dtdns.net:5000/fever` as our Fever API compatible server address which we will setup shortly.
 
-## 5. USB hard drive setup
+### 5. USB hard drive setup
 
 First, a quick note. As I was compiling this guide, I decided to switch around a couple of things in the physical setup of the Raspberry Pi, one of those was the USB cable for the hard drive. This cable was bad, but it was only after about 12 hours of use before I realised it. These were strange intermittent connection issues, sometimes it would be fine for several hours, other times it would not mount at all, other times it would show up and be write-locked etc. I thought I was doing something drastically wrong with my configuration so tried many attempts to repair permissions etc, before finally realising it was a hardware issue when the following popped-up `ls: reading directory .: Input/output error`. Ugh. Anyway, the lesson here if you could just remove your palm from your face, is to always check your cables, don't be an idiot like me!
 
 Now let's get this USB disk set up. For paranoia reasons I like to encrypt any external hard drives I use. On Mac it is built-in, on Linux there are many options but we will be using dm-crypt LUKS which seems excellent and means if someone walks off with your USB drive they can't simply mount it and browse all your files.
 
-### USB device ID
+#### USB device ID
 
 We need to first get the ID of the USB drive. First ensure the USB disk is unplugged, and then plug connect it and allow it to power up and immediately enter the following command:
 
@@ -309,7 +312,7 @@ In the output shown it will also display the size of the disk, and again since w
 
 Now make a note of your device ID, if you get this wrong in the following steps you could end up overwriting the SD card or another partition which would be a serious pain.
 
-### LUKS
+#### LUKS
 
 Now we're going to employ [LUKS](https://code.google.com/p/cryptsetup/) for disk encryption. As credit, this part of the guide is adapted from [How to create an encrypted disk partition on Linux](http://xmodulo.com/2013/01/how-to-create-encrypted-disk-partition-on-linux.html), I recommend reading the full article if you would like more detailed information. We start by issuing the following commands:
 
@@ -424,7 +427,7 @@ Now we can us **df** to check the disks are mounted correctly:
 
 *Tip: if you would like to the output of **df** with megabytes, use `df -m` instead.*
 
-### Mount LUKS partitions automatically
+#### Mount LUKS partitions automatically
 
 There is no point having encrypted drives if we need to SSH in, enter passphrases and run these commands everytime we we reboot. Follow these instructions to have them mounted automatically. Enter the following command, again adapt it so you have the same device ID:
 
@@ -462,7 +465,7 @@ Now we need to setup a group and alter some permissions:
 
 Now reboot, test if the partitions are auto-mounted, and see if you can write to the partition as a normal user.
 
-## 6. BitTorrent Sync
+### 6. BitTorrent Sync
 
 I'll admit, so far this has been pretty boring stuff, now we can start adding more fun software like Bittorrent Sync. First let's get a few basic packages such as Git[2], htop[3] and Vim[4], run the following command:
 
@@ -607,7 +610,7 @@ Your Raspberry Pi will now reboot, and all being well you should have the new bt
 To get up and running with BitTorrent Sync you need to add shared folders. First click on **Add Folder**, then if you already have an existing secret you can paste it in, or you can create a new one by clicking **Generate**. You can find the hard drive under **/mnt/btsync**.
 Congratulations you now have BitTorrent Sync running on your Raspberry Pi.
 
-## 7. Stringer RSS
+### 7. Stringer RSS
 
 If you subscribe to RSS feeds then you might be interested in [Stringer](http://github.com/swanson/stringer/), an awesome, simple, un-social RSS reader and Fever compatible API system. It has a nice web ui, but probably the best thing it has is compatibility with Fever's API, so you can use an app like Press on Android. This part is adapted from the official documentation on [GitHub](https://github.com/swanson/stringer/blob/master/VPS.md), that guide is much more comprehensive so I recommend reading it for more in-depth information. Installation is pretty straight-forward, start by entering the following commands:
 
@@ -674,13 +677,13 @@ Now, if you set up port-forwarding ealier correctly and are using dynamic DNS yo
   http://192.168.1.10:5000 # from inside the lan
   http://user.dtdns.net:5000 # from anywhere
 
-## Conclusion
+### Conclusion
 
 This is an exhaustive guide and I mainly made it for my own reference, but if you found it helpful or have any suggestions please leave them in the comments. Thanks for reading.
 
 ##### Footnotes
 
 [1] There is also a GUI version Nmap.
-[2] [**Git**](http://git-scm.com/) is a free and open source distributed version control system designed to handle everything from small to very large projects with speed and efficiency.
-[3] [**Htop**](http://htop.sourceforge.net/) is an interactive system-monitor process-viewer written for Linux. It is designed to replace the Unix program top. It shows a frequently updated list of the processes running on a computer, normally ordered by the amount of CPU usage. Unlike top, htop provides a full list of processes running, instead of the top resource-consuming processes. Htop uses color and gives visual information about processor, swap and memory status.
-[4] [**Vim**](http://www.vim.org/) is a highly configurable text editor built to enable efficient text editing. It is an improved version of the vi editor distributed with most UNIX systems.
+[2] [Git](http://git-scm.com/) is a free and open source distributed version control system designed to handle everything from small to very large projects with speed and efficiency.
+[3] [Htop](http://htop.sourceforge.net/) is an interactive system-monitor process-viewer written for Linux. It is designed to replace the Unix program top. It shows a frequently updated list of the processes running on a computer, normally ordered by the amount of CPU usage. Unlike top, htop provides a full list of processes running, instead of the top resource-consuming processes. Htop uses color and gives visual information about processor, swap and memory status.
+[4] [Vim](http://www.vim.org/) is a highly configurable text editor built to enable efficient text editing. It is an improved version of the vi editor distributed with most UNIX systems.

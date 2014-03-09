@@ -3,32 +3,12 @@
 <head>
     <meta charset="utf-8">
     <title>{{ page.title }}</title>
-    <link href='http://fonts.googleapis.com/css?family=Source+Code+Pro:400,700|Abril+Fatface|Open+Sans:300italic,400italic,700italic,800italic,400,300,700,800' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Source+Code+Pro:400,700|PT+Sans:700,700italic|PT+Sans+Narrow:700|PT+Serif:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="{{ site.baseurl }}css/application.css">
 </head>
 <body>
-  <div class="wrapper-inverse">
-
-    <div class="container">
-
-      <div class="header">
-
-        <div class="header-info">
-          <h1 class="title"><a href="/">{{ site.name }}</a></h1>
-          <p>A blog by Daniel Davidson; web developer, tech enthusiast and geek.</p>
-        </div>
-
-<!--         <nav class="nav-primary" role="navigation" >
-            <ul>
-                {% for p in site.pages %}
-                <li>
-                  <a {% if p.url == page.url %}class="active"{% endif %} href="{{ p.url }}">{{ p.title }}</a>
-                </li>
-                {% endfor %}
-            </ul>
-        </nav> -->
-      </div>
-    </div>
+<div class="container">
+  <div class="header">
+    <h1 class="title"><a href="/">{{ site.name }}</a></h1>
+    <p>A blog about programming, tech and life.</p>
   </div>
-
-  <div class="container">
