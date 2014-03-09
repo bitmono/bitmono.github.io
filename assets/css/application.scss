@@ -4,7 +4,7 @@
 // @import 'sass/grid';
 // @import 'sass/lib/neat/neat';
 
-$primaryColor: #FF360E;
+$primaryColor: #fd734f;
 $maxWidth: 600px;
 
 body {
@@ -29,13 +29,14 @@ div.container {
 }
 
 div.header {
-  padding: 25px 30px 30px;
+  padding: 10px 30px 30px;
   background: $primaryColor;
   p {
     font-family: 'PT Sans', sans-serif;
     line-height: 1;
     text-transform: uppercase;
-    color: black;
+    color: white;
+    font-weight: 700;
   }
   h1 {
     line-height: 1;
@@ -45,7 +46,8 @@ div.header {
     }
     font-family: 'PT Sans Narrow', sans-serif;
     text-transform: uppercase;
-    font-size: 150px;
+    font-size: 120px;
+    // font-weight: 100;
     a {
       color: white;
       text-decoration: none;
